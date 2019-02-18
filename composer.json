@@ -1,6 +1,6 @@
 {
   "name": "paragonie/eloquent-ciphersweet",
-  "description": "Provides searchable encrypted columns for Doctrine ORM",
+  "description": "Provides searchable encrypted columns for Eloquent ORM",
   "license": "ISC",
   "authors": [
     {
