@@ -60,11 +60,15 @@ class BlindIndexMapping implements IndexMappingInterface
 
     /**
      * @param array $indexes
+     * @throws \TypeError
      */
     public function __invoke(array $indexes)
     {
         if (!isset($indexes[$this->table][$this->index]['value'])) {
             throw new \TypeError('Missing indexes on input array');
+        }
+        if (!($this->target instanceof Model)) {
+            throw new \TypeError('Target must be an Eloquent Model');
         }
         $this->target->{$this->property} = $indexes[$this->table][$this->index]['value'];
     }
