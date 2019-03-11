@@ -12,21 +12,13 @@ We do not support non-Composer use-cases with this adapter library.
 
 ## Configuration
 
-Once you've installed , create a `config/ciphersweet.php` file to [specify your CipherSweet key provider](https://github.com/paragonie/ciphersweet/blob/master/docs/README.md#define-your-key-provider).
+Once you've installed , publish `config/ciphersweet.php` with `php artisan vendor:publish` and set your key to a random
+32-byte string.
 
-```php
-<?php
-use ParagonIE\CipherSweet\CipherSweet;
-use ParagonIE\CipherSweet\Backend\ModernCrypto;
-use ParagonIE\CipherSweet\KeyProvider\StringProvider;
+```
+use ParagonIE\ConstantTime\Hex;
 
-$key = new StringProvider(
-    new ModernCrypto,
-    env('APP_CIPHERSWEET_KEY', '2307c9579923de254e663a42dd18057ff3d955fa7de8e2f6f1bd3ab1bec3bd3c')
-);
-return [
-    'engine' => new CipherSweet($key)
-];
+var_dump(Hex::encode(random_bytes(32)));
 ```
 
 Once the configuration is done, you can begin using encrypted fields in your models.
