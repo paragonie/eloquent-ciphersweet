@@ -20,6 +20,5 @@ class EncryptedFieldModel extends Model
     protected static function boot()
     {
         parent::boot();
-        static::bootCipherSweet();
     }
 }
