@@ -148,7 +148,7 @@ trait CipherSweet
     public function getProcessor(): EncryptedMultiRows
     {
         /** @var CipherSweetEngine $engine */
-        $engine = config('ciphersweet.engine');
+        $engine = app(CipherSweetEngine::class);
 
         /** @var EncryptedMultiRows $eMultiRow */
         $eMultiRow = new EncryptedMultiRows($engine);
