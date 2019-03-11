@@ -12,13 +12,11 @@ We do not support non-Composer use-cases with this adapter library.
 
 ## Configuration
 
-Once you've installed , publish `config/ciphersweet.php` with `php artisan vendor:publish` and set your key to a random
-32-byte string.
+Once you've installed , publish `config/ciphersweet.php` with `php artisan vendor:publish` and then run the following
+artisan command to set your key.
 
 ```
-use ParagonIE\ConstantTime\Hex;
-
-var_dump(Hex::encode(random_bytes(32)));
+php artisan ciphersweet:generate:key
 ```
 
 Once the configuration is done, you can begin using encrypted fields in your models.

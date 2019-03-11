@@ -12,6 +12,7 @@ use ParagonIE\CipherSweet\Exception\CryptoOperationException;
 use ParagonIE\CipherSweet\KeyProvider\FileProvider;
 use ParagonIE\CipherSweet\KeyProvider\RandomProvider;
 use ParagonIE\CipherSweet\KeyProvider\StringProvider;
+use ParagonIE\EloquentCipherSweet\Console\GenerateKey;
 
 class CipherSweetServiceProvider extends ServiceProvider
 {
@@ -20,6 +21,12 @@ class CipherSweetServiceProvider extends ServiceProvider
      */
     public function boot()
     {
+        if ($this->app->runningInConsole()) {
+            $this->commands([
+                GenerateKey::class,
+            ]);
+        }
+
         $this->publishes([
             __DIR__ . '/config/ciphersweet.php' => config_path('ciphersweet.php'),
         ]);
