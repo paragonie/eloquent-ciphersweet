@@ -46,8 +46,7 @@ you can simply leave them un-configured.
 ### CipherSweet Trait
 
 If this is not tenable due to existing object inheritance requirements, you may also
-simply use the `CipherSweet` trait and then add `static::bootCipherSweet()` to your
-`boot()` method, like so.
+simply use the `CipherSweet` trait, like so.
 
 ```php
 <?php
@@ -57,18 +56,6 @@ use ParagonIE\EloquentCipherSweet\CipherSweet;
 class Blah extends Model
 {
     use CipherSweet;
-
-    /**
-     * The "booting" method of the model.
-     *
-     * @return void
-     */
-    protected static function boot()
-    {
-        parent::boot();
-        /* ...other custom code here... */
-        static::bootCipherSweet();
-    }    
 }
 ```
 
