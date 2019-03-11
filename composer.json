@@ -11,6 +11,7 @@
   "require": {
     "php": "^7",
     "illuminate/config": "^5",
+    "illuminate/console": "^5.3",
     "illuminate/database": "^5.3",
     "illuminate/support": "^5.3",
     "paragonie/ciphersweet": "^1.9",
