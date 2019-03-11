@@ -30,5 +30,12 @@
     "psr-4": {
       "ParagonIE\\EloquentCipherSweet\\Tests\\": "test/"
     }
+  },
+  "extra": {
+    "laravel": {
+      "providers": [
+        "ParagonIE\\EloquentCipherSweet\\ServiceProvider"
+      ]
+    }
   }
 }
