@@ -4,7 +4,7 @@ return [
 
     /*
     |--------------------------------------------------------------------------
-    | Default Backend
+    | Cryptographic Backend
     |--------------------------------------------------------------------------
     |
     | This controls which cryptographic backend will be used by CipherSweet.
@@ -19,8 +19,20 @@ return [
 
     /*
     |--------------------------------------------------------------------------
-    | Default Key Provider
+    | Key Provider
     |--------------------------------------------------------------------------
+    |
+    | Select which key provider your application will use. The default option
+    | is to read a string literal out of .env, but it's also possible to
+    | provide the key in a file, use a custom key provider, or use random keys
+    | for testing.
+    |
+    | "string" is selected by default to read a key directly from your .env
+    | file. Use `artisan ciphersweet:generate:key` to securely generate that
+    | key.
+    |
+    | Supported: "custom", "file", "random", "string"
+    |
     */
 
     'provider' => env('CIPHERSWEET_PROVIDER', 'string'),
@@ -30,8 +42,10 @@ return [
     | Key Providers
     |--------------------------------------------------------------------------
     |
-    | Configure the
-    | Supported: "custom", "file", "random", "string"
+    | Set provider-specific options here. "string" will read the key directly
+    | from your .env file. "file" will read the contents of the specified file
+    | to use as your key. "custom" points to a factory class that returns a
+    | provider from its `__invoke` method. Please see the docs for more details.
     |
     */
 
