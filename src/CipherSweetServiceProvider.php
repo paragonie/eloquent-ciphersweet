@@ -64,6 +64,8 @@ class CipherSweetServiceProvider extends ServiceProvider
     protected function buildKeyProvider(BackendInterface $backend): KeyProviderInterface
     {
         switch (config('ciphersweet.provider')) {
+            case 'custom':
+                return $this->buildCustomKeyProvider($backend);
             case 'file':
                 return new FileProvider($backend, config('ciphersweet.file.path'));
             case 'string':
@@ -72,5 +74,16 @@ class CipherSweetServiceProvider extends ServiceProvider
             default:
                 return new RandomProvider($backend);
         }
+    }
+
+    /**
+     * @param BackendInterface $backend
+     * @return KeyProviderInterface
+     */
+    protected function buildCustomKeyProvider(BackendInterface $backend): KeyProviderInterface
+    {
+        $factory = app(config('ciphersweet.custom.via'));
+
+        return $factory($backend);
     }
 }
