@@ -108,9 +108,6 @@ class Blah extends EncryptedFieldModel
 If you're not familiar with the `EncryptedMultiRows` API, please refer to the
 relevant section of the [CipherSweet documentation](https://github.com/paragonie/ciphersweet/tree/master/docs#encryptedmultirows).
 
-## Storing and Searching on Encrypted Data
-
-
 ## Creating a Custom Key Provider
 
 If you would like to use your own custom key provider implementation, e.g. to integrate with AWS KMS, specify 'custom'
@@ -118,3 +115,5 @@ as your option for 'provider' in `config/ciphersweet.php`, uncomment the 'via' l
 name of your own key provider factory class. It should implement the `__invoke` method and return a class that
 implements `\ParagonIE\CipherSweet\Contract\KeyProviderInterface`. `__invoke` will be passed an instance of
 `\ParagonIE\CipherSweet\Contract\BackendInterface` as its sole argument.
+
+## Storing and Searching on Encrypted Data
