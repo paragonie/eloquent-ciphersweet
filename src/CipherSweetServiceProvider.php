@@ -77,8 +77,6 @@ class CipherSweetServiceProvider extends ServiceProvider
     }
 
     /**
-     * Override me to provide a custom KeyProviderInterface instance.
-     *
      * @param BackendInterface $backend
      * @return KeyProviderInterface
      */
