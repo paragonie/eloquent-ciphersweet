@@ -31,11 +31,14 @@ return [
     |--------------------------------------------------------------------------
     |
     | Configure the
-    | Supported: "file", "random", "string"
+    | Supported: "custom", "file", "random", "string"
     |
     */
 
     'providers' => [
+        'custom' => [
+            //'via' => \App\CipherSweetKey\CreateKeyProvider::class,
+        ],
         'file' => [
             'path' => env('CIPHERSWEET_FILE_PATH'),
         ],
