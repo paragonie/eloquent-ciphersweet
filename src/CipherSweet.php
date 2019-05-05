@@ -3,7 +3,6 @@ declare(strict_types=1);
 namespace ParagonIE\EloquentCipherSweet;
 
 use Illuminate\Database\Eloquent\Builder as EloquentBuilder;
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Query\Builder;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\DB;
@@ -175,10 +174,7 @@ trait CipherSweet
     final public function scopeWhereBlind(EloquentBuilder $query, string $indexName, $value)
     {
         return $query->whereExists(function (Builder $query) use ($indexName, $value): Builder {
-            /**
-             * @var CipherSweetEngine $engine
-             * @var $model Model|\ParagonIE\EloquentCipherSweet\CipherSweet
-             */
+            /** @var CipherSweetEngine $engine */
             $engine = app(CipherSweetEngine::class);
             $table = $this->getTable();
 
@@ -211,4 +207,23 @@ trait CipherSweet
      * @return string
      */
     abstract public function getKeyName();
+
+    /**
+     * @return array
+     * @throws \SodiumException
+     */
+    final public static function getBlindIndexTypes(): array
+    {
+        /** @var CipherSweetEngine $engine */
+        $engine = app(CipherSweetEngine::class);
+        $table = (new static)->getTable();
+
+        $types = [];
+
+        foreach (static::$indexToField as $indexName => $field) {
+            $types[] = $engine->getIndexTypeColumn($table, is_string($field) ? $field : Constants::COMPOUND_SPECIAL, $indexName);
+        }
+
+        return $types;
+    }
 }
