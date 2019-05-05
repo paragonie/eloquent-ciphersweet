@@ -18,7 +18,7 @@ final class CreateBlindIndexesTable extends Migration
         Schema::create('blind_indexes', function (Blueprint $table) {
             $table->string('type');
             $table->string('value');
-            $table->unsignedInteger('foreign_id');
+            $table->unsignedBigInteger('foreign_id');
 
             $table->index(['type', 'value']);
             $table->unique(['type', 'foreign_id']);

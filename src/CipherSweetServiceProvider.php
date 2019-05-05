@@ -14,7 +14,7 @@ use ParagonIE\CipherSweet\KeyProvider\RandomProvider;
 use ParagonIE\CipherSweet\KeyProvider\StringProvider;
 use ParagonIE\EloquentCipherSweet\Console\GenerateKey;
 
-class CipherSweetServiceProvider extends ServiceProvider
+final class CipherSweetServiceProvider extends ServiceProvider
 {
     /**
      * @return void
@@ -40,7 +40,9 @@ class CipherSweetServiceProvider extends ServiceProvider
     public function register()
     {
         $this->app->singleton(CipherSweet::class, function () {
-            return new CipherSweet($this->buildKeyProvider($this->buildBackend()));
+            $backend = $this->buildBackend();
+
+            return new CipherSweet($this->buildKeyProvider($backend), $backend);
         });
     }
 
@@ -67,11 +69,11 @@ class CipherSweetServiceProvider extends ServiceProvider
     {
         switch (config('ciphersweet.provider')) {
             case 'custom':
-                return $this->buildCustomKeyProvider($backend);
+                return $this->buildCustomKeyProvider();
             case 'file':
-                return new FileProvider($backend, config('ciphersweet.file.path'));
+                return new FileProvider(config('ciphersweet.file.path'));
             case 'string':
-                return new StringProvider($backend, config('ciphersweet.string.key'));
+                return new StringProvider(config('ciphersweet.string.key'));
             case 'random':
             default:
                 return new RandomProvider($backend);
@@ -79,13 +81,12 @@ class CipherSweetServiceProvider extends ServiceProvider
     }
 
     /**
-     * @param BackendInterface $backend
      * @return KeyProviderInterface
      */
-    protected function buildCustomKeyProvider(BackendInterface $backend): KeyProviderInterface
+    protected function buildCustomKeyProvider(): KeyProviderInterface
     {
         $factory = app(config('ciphersweet.custom.via'));
 
-        return $factory($backend);
+        return $factory();
     }
 }
