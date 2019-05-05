@@ -2,7 +2,12 @@
 declare(strict_types=1);
 namespace ParagonIE\EloquentCipherSweet;
 
+use Illuminate\Database\Eloquent\Builder as EloquentBuilder;
+use Illuminate\Support\Arr;
+use ParagonIE\CipherSweet\BlindIndex;
 use ParagonIE\CipherSweet\CipherSweet as CipherSweetEngine;
+use ParagonIE\CipherSweet\CompoundIndex;
+use ParagonIE\CipherSweet\Contract\TransformationInterface;
 use ParagonIE\CipherSweet\EncryptedRow;
 
 /**
@@ -10,6 +15,7 @@ use ParagonIE\CipherSweet\EncryptedRow;
  *
  * Makes integrating CipherSweet with Eloquent ORM much easier.
  *
+ * @method EloquentBuilder whereBlind(string $column, string $indexName, string $value)
  * @package ParagonIE\EloquentCipherSweet
  */
 trait CipherSweet
@@ -17,7 +23,12 @@ trait CipherSweet
     /** @var EncryptedRow */
     protected static $cipherSweetEncryptedRow;
 
+    protected static $cipherSweetIndexes = [];
+
     protected static $cipherSweetFields = [];
+
+    /** @var array<string,string|array<string>> */
+    private static $indexToField = [];
 
     /**
      * @return void
@@ -32,6 +43,7 @@ trait CipherSweet
         );
 
         static::configureCipherSweetFields(static::$cipherSweetEncryptedRow);
+        static::configureCipherSweetIndexes(static::$cipherSweetEncryptedRow);
         static::configureCipherSweet(static::$cipherSweetEncryptedRow);
     }
 
@@ -53,6 +65,50 @@ trait CipherSweet
 
             $encryptedRow->addField($field, $type, $aadSource);
         }
+    }
+
+    /**
+     * Configures blind indexes.
+     *
+     * @param EncryptedRow $encryptedRow
+     * @return void
+     */
+    private static function configureCipherSweetIndexes(EncryptedRow $encryptedRow)
+    {
+        foreach (static::$cipherSweetIndexes as $index => $configuration) {
+            $configuration = Arr::wrap($configuration);
+
+            $column = $configuration[0];
+            $transformations = isset($configuration[1]) ? static::convertTransformations(Arr::wrap($configuration[1])) : [];
+            $isSlow = $configuration[2] ?? false;
+            $filterBits = $configuration[3] ?? 256;
+            $hashConfig = $configuration[4] ?? [];
+
+            if (is_array($column)) {
+                $compoundIndex = new CompoundIndex($index, $column, (int) $filterBits, !$isSlow, $hashConfig);
+
+                foreach ($transformations as $transformation) {
+                    $compoundIndex->addRowTransform($transformation);
+                }
+
+                $encryptedRow->addCompoundIndex($compoundIndex);
+            } else {
+                $encryptedRow->addBlindIndex($column, new BlindIndex($index, $transformations, (int) $filterBits, !$isSlow, $hashConfig));
+            }
+
+            static::$indexToField[$index] = $column;
+        }
+    }
+
+    /**
+     * @param array<string> $transformations
+     * @return array<TransformationInterface>
+     */
+    private static function convertTransformations(array $transformations): array
+    {
+        return array_map(function ($transformation) {
+            return app($transformation);
+        }, $transformations);
     }
 
     /**
