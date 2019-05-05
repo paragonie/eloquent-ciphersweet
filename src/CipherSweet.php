@@ -37,7 +37,7 @@ trait CipherSweet
     /**
      * @return void
      */
-    protected static function bootCipherSweet()
+    final protected static function bootCipherSweet()
     {
         static::observe(ModelObserver::class);
 
@@ -65,7 +65,7 @@ trait CipherSweet
      * @param EncryptedRow $encryptedRow
      * @return void
      */
-    private static function configureCipherSweetFields(EncryptedRow $encryptedRow)
+    final protected static function configureCipherSweetFields(EncryptedRow $encryptedRow)
     {
         foreach (static::$cipherSweetFields as $field => $type) {
             $aadSource = '';
@@ -84,7 +84,7 @@ trait CipherSweet
      * @param EncryptedRow $encryptedRow
      * @return void
      */
-    private static function configureCipherSweetIndexes(EncryptedRow $encryptedRow)
+    final protected static function configureCipherSweetIndexes(EncryptedRow $encryptedRow)
     {
         foreach (static::$cipherSweetIndexes as $index => $configuration) {
             $configuration = Arr::wrap($configuration);
@@ -115,7 +115,7 @@ trait CipherSweet
      * @param array<string> $transformations
      * @return array<TransformationInterface>
      */
-    private static function convertTransformations(array $transformations): array
+    final protected static function convertTransformations(array $transformations): array
     {
         return array_map(function ($transformation) {
             return app($transformation);
@@ -139,7 +139,7 @@ trait CipherSweet
      * @throws \ParagonIE\CipherSweet\Exception\CryptoOperationException
      * @throws \SodiumException
      */
-    public function encryptRow()
+    final public function encryptRow()
     {
         $this->setRawAttributes(static::$cipherSweetEncryptedRow->encryptRow($this->getAttributes()), true);
     }
@@ -161,7 +161,7 @@ trait CipherSweet
      * @throws \ParagonIE\CipherSweet\Exception\CryptoOperationException
      * @throws \SodiumException
      */
-    public function decryptRow()
+    final public function decryptRow()
     {
         $this->setRawAttributes(static::$cipherSweetEncryptedRow->decryptRow($this->getAttributes()));
     }
@@ -172,7 +172,7 @@ trait CipherSweet
      * @param string|array<string,mixed> $value
      * @return EloquentBuilder
      */
-    public function scopeWhereBlind(EloquentBuilder $query, string $indexName, $value)
+    final public function scopeWhereBlind(EloquentBuilder $query, string $indexName, $value)
     {
         return $query->whereExists(function (Builder $query) use ($indexName, $value): Builder {
             /**
