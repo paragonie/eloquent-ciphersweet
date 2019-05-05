@@ -14,7 +14,7 @@ use ParagonIE\CipherSweet\KeyProvider\RandomProvider;
 use ParagonIE\CipherSweet\KeyProvider\StringProvider;
 use ParagonIE\EloquentCipherSweet\Console\GenerateKey;
 
-class CipherSweetServiceProvider extends ServiceProvider
+final class CipherSweetServiceProvider extends ServiceProvider
 {
     /**
      * @return void
