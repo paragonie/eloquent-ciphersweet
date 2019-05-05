@@ -140,7 +140,7 @@ trait CipherSweet
      */
     final public function encryptRow()
     {
-        $this->setRawAttributes(static::$cipherSweetEncryptedRow->encryptRow($this->getAttributes()), true);
+        $this->setRawAttributes(static::$cipherSweetEncryptedRow->encryptRow($this->getAttributes()));
     }
 
     /**
