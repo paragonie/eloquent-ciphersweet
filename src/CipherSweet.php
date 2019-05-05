@@ -3,10 +3,14 @@ declare(strict_types=1);
 namespace ParagonIE\EloquentCipherSweet;
 
 use Illuminate\Database\Eloquent\Builder as EloquentBuilder;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Query\Builder;
 use Illuminate\Support\Arr;
+use Illuminate\Support\Facades\DB;
 use ParagonIE\CipherSweet\BlindIndex;
 use ParagonIE\CipherSweet\CipherSweet as CipherSweetEngine;
 use ParagonIE\CipherSweet\CompoundIndex;
+use ParagonIE\CipherSweet\Constants;
 use ParagonIE\CipherSweet\Contract\TransformationInterface;
 use ParagonIE\CipherSweet\EncryptedRow;
 
@@ -46,6 +50,13 @@ trait CipherSweet
         static::configureCipherSweetIndexes(static::$cipherSweetEncryptedRow);
         static::configureCipherSweet(static::$cipherSweetEncryptedRow);
     }
+
+    /**
+     * @param  object|array|string  $classes
+     * @return void
+     * @throws \RuntimeException
+     */
+    abstract public static function observe($classes);
 
     /**
      * Configures which fields are encrypted and as what type. Additionally configures a source of additional
@@ -134,6 +145,18 @@ trait CipherSweet
     }
 
     /**
+     * @param array $attributes
+     * @param bool $sync
+     * @return $this
+     */
+    abstract public function setRawAttributes(array $attributes, $sync = false);
+
+    /**
+     * @return array
+     */
+    abstract public function getAttributes();
+
+    /**
      * @return void
      * @throws \ParagonIE\CipherSweet\Exception\CryptoOperationException
      * @throws \SodiumException
@@ -142,4 +165,50 @@ trait CipherSweet
     {
         $this->setRawAttributes(static::$cipherSweetEncryptedRow->decryptRow($this->getAttributes()));
     }
+
+    /**
+     * @param EloquentBuilder $query
+     * @param string $indexName
+     * @param string|array<string,mixed> $value
+     * @return EloquentBuilder
+     */
+    public function scopeWhereBlind(EloquentBuilder $query, string $indexName, $value)
+    {
+        return $query->whereExists(function (Builder $query) use ($indexName, $value): Builder {
+            /**
+             * @var CipherSweetEngine $engine
+             * @var $model Model|\ParagonIE\EloquentCipherSweet\CipherSweet
+             */
+            $engine = app(CipherSweetEngine::class);
+            $table = $this->getTable();
+
+            $column = static::$indexToField[$indexName];
+            $columns = is_string($column) ? [$column => $value] : $value;
+
+            return $query->select(DB::raw(1))
+                ->from('blind_indexes')
+                ->whereRaw(
+                    'blind_indexes.foreign_id = ?.?',
+                    [$table, $this->getKeyName()]
+                )
+                ->where(
+                    'blind_indexes.type',
+                    $engine->getIndexTypeColumn($table, is_string($column) ? $column : Constants::COMPOUND_SPECIAL, $indexName)
+                )
+                ->where(
+                    'blind_indexes.value',
+                    static::$cipherSweetEncryptedRow->getBlindIndex($indexName, $columns)
+                );
+        });
+    }
+
+    /**
+     * @return string
+     */
+    abstract public function getTable();
+
+    /**
+     * @return string
+     */
+    abstract public function getKeyName();
 }
