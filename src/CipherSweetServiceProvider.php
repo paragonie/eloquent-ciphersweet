@@ -71,9 +71,9 @@ final class CipherSweetServiceProvider extends ServiceProvider
             case 'custom':
                 return $this->buildCustomKeyProvider();
             case 'file':
-                return new FileProvider(config('ciphersweet.provider.file.path'));
+                return new FileProvider(config('ciphersweet.providers.file.path'));
             case 'string':
-                return new StringProvider(config('ciphersweet.provider.string.key'));
+                return new StringProvider(config('ciphersweet.providers.string.key'));
             case 'random':
             default:
                 return new RandomProvider($backend);
