@@ -302,8 +302,6 @@ trait CipherSweet
         foreach ($this->attributes as $key => $value) {
             if (!$this->originalIsEquivalent($key, $value)) {
                 $dirty[$key] = $value;
-
-                \Log::debug($key);
             }
         }
 
@@ -391,7 +389,8 @@ trait CipherSweet
     {
         return $query->whereExists(function (Builder $query) use ($indexName, $value): Builder {
             $engine = app(CipherSweetEngine::class);
-            $table = $this->getTable();
+            $table = (new static)->getTable();
+            $keyName = (new static)->getKeyName();
 
             $column = static::$indexToField[$indexName];
             $columns = is_string($column) ? [$column => $value] : $value;
@@ -399,7 +398,7 @@ trait CipherSweet
 
             return $query->select(DB::raw(1))
                 ->from('blind_indexes')
-                ->whereRaw("blind_indexes.foreign_id = {$table}.{$this->getKeyName()}")
+                ->whereRaw("blind_indexes.foreign_id = {$table}.{$keyName}")
                 ->where(
                     'blind_indexes.type',
                     $engine->getIndexTypeColumn($table, is_string($column) ? $column : Constants::COMPOUND_SPECIAL, $indexName)
@@ -422,7 +421,8 @@ trait CipherSweet
         return $query->orWhereExists(function (Builder $query) use ($indexName, $value): Builder {
             /** @var CipherSweetEngine $engine */
             $engine = app(CipherSweetEngine::class);
-            $table = $this->getTable();
+            $table = (new static)->getTable();
+            $keyName = (new static)->getKeyName();
 
             $column = static::$indexToField[$indexName];
             $columns = is_string($column) ? [$column => $value] : $value;
@@ -430,7 +430,7 @@ trait CipherSweet
 
             return $query->select(DB::raw(1))
                 ->from('blind_indexes')
-                ->whereRaw("blind_indexes.foreign_id = {$table}.{$this->getKeyName()}")
+                ->whereRaw("blind_indexes.foreign_id = {$table}.{$keyName}")
                 ->where(
                     'blind_indexes.type',
                     $engine->getIndexTypeColumn($table, is_string($column) ? $column : Constants::COMPOUND_SPECIAL, $indexName)
