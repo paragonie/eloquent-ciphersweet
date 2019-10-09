@@ -390,6 +390,10 @@ trait CipherSweet
     final public static function scopeWhereBlind(EloquentBuilder $query, string $indexName, $value)
     {
         return $query->whereExists(function (Builder $query) use ($indexName, $value): Builder {
+            if ($value === null) {
+                return $query;
+            }
+
             $engine = app(CipherSweetEngine::class);
             $table = (new static)->getTable();
             $keyName = (new static)->getKeyName();
@@ -421,7 +425,10 @@ trait CipherSweet
     final public static function scopeOrWhereBlind(EloquentBuilder $query, string $indexName, $value)
     {
         return $query->orWhereExists(function (Builder $query) use ($indexName, $value): Builder {
-            /** @var CipherSweetEngine $engine */
+            if ($value === null) {
+                return $query;
+            }
+            
             $engine = app(CipherSweetEngine::class);
             $table = (new static)->getTable();
             $keyName = (new static)->getKeyName();
