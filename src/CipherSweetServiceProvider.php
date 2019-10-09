@@ -32,6 +32,13 @@ final class CipherSweetServiceProvider extends ServiceProvider
         $this->publishes([
             __DIR__ . '/config/ciphersweet.php' => config_path('ciphersweet.php'),
         ]);
+
+        if (! class_exists('CreateBlindIndexesTable')) {
+            $timestamp = date('Y_m_d_His', time());
+            $this->publishes([
+                __DIR__.'/../migrations/create_blind_indexes_table.php.stub' => database_path("/migrations/{$timestamp}_create_blind_indexes_table.php"),
+            ], 'migrations');
+        }
     }
 
     /**
