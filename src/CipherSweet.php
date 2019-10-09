@@ -368,14 +368,16 @@ trait CipherSweet
         foreach (static::$indexToField as $indexName => $field) {
             $encryptedField = static::$cipherSweetEncryptedFields[$field];
 
-            $blindIndexType = $engine->getIndexTypeColumn($table, is_string($field) ? $field : Constants::COMPOUND_SPECIAL, $indexName);
-            $blindIndexValue = $encryptedField->getBlindIndex($attributes[$field], $indexName);
+            if (isset($attributes[$field])) {
+                $blindIndexType = $engine->getIndexTypeColumn($table, is_string($field) ? $field : Constants::COMPOUND_SPECIAL, $indexName);
+                $blindIndexValue = $encryptedField->getBlindIndex($attributes[$field], $indexName);
 
-            DB::table('blind_indexes')->insert([
-                'type' => $blindIndexType,
-                'value' => $blindIndexValue,
-                'foreign_id' => $this->getKey()
-            ]);
+                DB::table('blind_indexes')->insert([
+                    'type' => $blindIndexType,
+                    'value' => $blindIndexValue,
+                    'foreign_id' => $this->getKey()
+                ]);
+            }
         }
     }
 
