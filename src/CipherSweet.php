@@ -51,7 +51,6 @@ trait CipherSweet
     {
         static::observe(ModelObserver::class);
 
-
         static::configureCipherSweetFields();
         static::configureCipherSweetIndexes();
     }
@@ -203,6 +202,11 @@ trait CipherSweet
         // Check if string is null
         if (static::$cipherSweetFields[$key] === 'string' && $value === null) {
             return $encryptedField->encryptValue('');
+        }
+
+        // Check if attribute is double\float
+        if (static::$cipherSweetFields[$key] === 'string' && is_float($value)) {
+            return $encryptedField->encryptValue(strval($value));
         }
 
         return $encryptedField->encryptValue($value);
@@ -428,7 +432,7 @@ trait CipherSweet
             if ($value === null) {
                 return $query;
             }
-            
+
             $engine = app(CipherSweetEngine::class);
             $table = (new static)->getTable();
             $keyName = (new static)->getKeyName();
