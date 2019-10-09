@@ -57,7 +57,7 @@ return [
             'path' => env('CIPHERSWEET_FILE_PATH'),
         ],
         'string' => [
-            'key' => env('CIPHERSWEET_KEY', 'changeme'),
+            'key' => env('CIPHERSWEET_KEY', '075888e79c3166f38fc12a8b658b3991ffae4e78ac4740332a8ea9e955e4ec77'),
         ],
     ],
 ];

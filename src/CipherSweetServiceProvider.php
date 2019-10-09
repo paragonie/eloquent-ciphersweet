@@ -27,11 +27,11 @@ final class CipherSweetServiceProvider extends ServiceProvider
             ]);
         }
 
-        $this->loadMigrationsFrom(__DIR__ . '/database/migrations');
-
         $this->publishes([
-            __DIR__ . '/config/ciphersweet.php' => config_path('ciphersweet.php'),
-        ]);
+            __DIR__.'/../config/ciphersweet.php' => config_path('ciphersweet.php'),
+        ], 'config');
+
+        $this->mergeConfigFrom(__DIR__.'/../config/ciphersweet.php', 'ciphersweet');
 
         if (! class_exists('CreateBlindIndexesTable')) {
             $timestamp = date('Y_m_d_His', time());
