@@ -456,6 +456,30 @@ trait CipherSweet
     }
 
     /**
+     * @param EloquentBuilder $query
+     * @param string $indexName
+     * @param $valueArray
+     * @return EloquentBuilder
+     */
+    public static function scopeWhereInBlind(EloquentBuilder $query, string $indexName, $valueArray)
+    {
+        // Validate $valueArray
+        if (!is_array($valueArray)) {
+            return $query;
+        }
+
+        foreach ($valueArray as $key => $value) {
+            if ($key === 0) {
+                $query->whereBlind($indexName, $value);
+            } else {
+                $query->orWhereBlind($indexName, $value);
+            }
+        }
+
+        return $query;
+    }
+
+    /**
      * @return string
      */
     abstract public function getTable();
