@@ -14,10 +14,10 @@
   ],
   "require": {
     "php": "^7",
-    "illuminate/config": "^5",
-    "illuminate/console": "^5.3",
-    "illuminate/database": "^5.3",
-    "illuminate/support": "^5.3",
+    "illuminate/config": "^5|^6",
+    "illuminate/console": "^5.3|^6",
+    "illuminate/database": "^5.3|^6",
+    "illuminate/support": "^5.3|^6",
     "paragonie/ciphersweet": "^2.0",
     "psr/container": "^1.0",
     "symfony/finder": "^4"
