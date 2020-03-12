@@ -360,10 +360,12 @@ trait CipherSweet
 
     /**
      * @return void
-     * @param array $blindIndexes
      */
     final public function saveBlindIndexes()
     {
+        /**
+         * @var CipherSweetEngine
+         */
         $engine = app(CipherSweetEngine::class);
         $table = $this->getTable();
         $attributes = $this->getAttributes();
@@ -375,10 +377,11 @@ trait CipherSweet
                 $blindIndexType = $engine->getIndexTypeColumn($table, is_string($field) ? $field : Constants::COMPOUND_SPECIAL, $indexName);
                 $blindIndexValue = $encryptedField->getBlindIndex($attributes[$field], $indexName);
 
-                DB::table('blind_indexes')->insert([
+                DB::table('blind_indexes')->updateOrInsert([
                     'type' => $blindIndexType,
-                    'value' => $blindIndexValue,
                     'foreign_id' => $this->getKey()
+                ], [
+                    'value' => $blindIndexValue,
                 ]);
             }
         }

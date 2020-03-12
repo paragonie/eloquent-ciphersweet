@@ -37,6 +37,9 @@ final class ModelObserver
         }
     }
 
+    /**
+     * @param Model|CipherSweet $model
+     */
     public function saved(Model $model)
     {
         $model->saveBlindIndexes();
