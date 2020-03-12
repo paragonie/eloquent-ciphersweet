@@ -1,19 +1,17 @@
 <?php
 
-use Illuminate\Database\Migrations\Migration;
-use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Database\Migrations\Migration;
 
-final class CreateBlindIndexesTable extends Migration
+class CreateBlindIndexesTable extends Migration
 {
     /**
      * Run the migrations.
-     *
-     * @return void
      */
     public function up()
     {
-        Schema::create('blind_indexes', function (Blueprint $table) {
+        Schema::connection(config('ciphersweet.database_connection'))->create(config('ciphersweet.table_name'), function (Blueprint $table) {
             $table->string('type');
             $table->string('value');
             $table->unsignedBigInteger('foreign_id');
@@ -25,11 +23,9 @@ final class CreateBlindIndexesTable extends Migration
 
     /**
      * Reverse the migrations.
-     *
-     * @return void
      */
     public function down()
     {
-        Schema::drop('blind_indexes');
+        Schema::connection(config('ciphersweet.database_connection'))->dropIfExists(config('ciphersweet.table_name'));
     }
 }
