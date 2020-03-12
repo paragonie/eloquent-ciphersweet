@@ -23,22 +23,22 @@ final class ModelObserver
 
     /**
      * @param Model|CipherSweet $model
-     * @throws \ParagonIE\CipherSweet\Exception\CryptoOperationException
-     * @throws \SodiumException
-     */
-    public function retrieved(Model $model)
-    {
-        $model->decryptRow();
-    }
-
-    /**
-     * @param Model|CipherSweet $model
      * @throws \ParagonIE\CipherSweet\Exception\ArrayKeyException
      * @throws \ParagonIE\CipherSweet\Exception\CryptoOperationException
      * @throws \SodiumException
      */
     public function saving(Model $model)
     {
-        $model->encryptRow();
+        if ($types = $model::getBlindIndexTypes()) {
+            DB::table('blind_indexes')
+                ->whereIn('type', $types)
+                ->where('foreign_id', $model->getKey())
+                ->delete();
+        }
+    }
+
+    public function saved(Model $model)
+    {
+        $model->saveBlindIndexes();
     }
 }

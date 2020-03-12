@@ -57,7 +57,19 @@ return [
             'path' => env('CIPHERSWEET_FILE_PATH'),
         ],
         'string' => [
-            'key' => env('CIPHERSWEET_KEY'),
+            'key' => env('CIPHERSWEET_KEY', '075888e79c3166f38fc12a8b658b3991ffae4e78ac4740332a8ea9e955e4ec77'),
         ],
     ],
+
+    /*
+     * This is the name of the table that will be created by the migration and
+     * used by the CipherSweet model shipped with this package.
+     */
+    'table_name' => 'blind_indexes',
+
+    /*
+     * This is the database connection that will be used by the migration and
+     * the CipherSweet model shipped with this package.
+     */
+    'database_connection' => env('CIPHERSWEET_DB_CONNECTION', env('DB_CONNECTION', 'mysql')),
 ];

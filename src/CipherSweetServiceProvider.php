@@ -27,11 +27,18 @@ final class CipherSweetServiceProvider extends ServiceProvider
             ]);
         }
 
-        $this->loadMigrationsFrom(__DIR__ . '/database/migrations');
-
         $this->publishes([
-            __DIR__ . '/config/ciphersweet.php' => config_path('ciphersweet.php'),
-        ]);
+            __DIR__.'/../config/ciphersweet.php' => config_path('ciphersweet.php'),
+        ], 'config');
+
+        $this->mergeConfigFrom(__DIR__.'/../config/ciphersweet.php', 'ciphersweet');
+
+        if (! class_exists('CreateBlindIndexesTable')) {
+            $timestamp = date('Y_m_d_His', time());
+            $this->publishes([
+                __DIR__.'/../migrations/create_blind_indexes_table.php.stub' => database_path("/migrations/{$timestamp}_create_blind_indexes_table.php"),
+            ], 'migrations');
+        }
     }
 
     /**
@@ -71,9 +78,9 @@ final class CipherSweetServiceProvider extends ServiceProvider
             case 'custom':
                 return $this->buildCustomKeyProvider();
             case 'file':
-                return new FileProvider(config('ciphersweet.file.path'));
+                return new FileProvider(config('ciphersweet.providers.file.path'));
             case 'string':
-                return new StringProvider(config('ciphersweet.string.key'));
+                return new StringProvider(config('ciphersweet.providers.string.key'));
             case 'random':
             default:
                 return new RandomProvider($backend);
