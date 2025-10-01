@@ -1,6 +1,7 @@
 # Eloquent-CipherSweet Adapter
 
 [![Build Status](https://github.com/paragonie/eloquent-ciphersweet/actions/workflows/ci.yml/badge.svg)](https://github.com/paragonie/eloquent-ciphersweet/actions)
+[![Build Status](https://github.com/paragonie/eloquent-ciphersweet/actions/workflows/example-app.yml/badge.svg)](https://github.com/paragonie/eloquent-ciphersweet/tree/main/docs/example-app)
 [![Latest Stable Version](https://poser.pugx.org/paragonie/eloquent-ciphersweet/v/stable)](https://packagist.org/packages/paragonie/eloquent-ciphersweet)
 [![Latest Unstable Version](https://poser.pugx.org/paragonie/eloquent-ciphersweet/v/unstable)](https://packagist.org/packages/paragonie/eloquent-ciphersweet)
 [![License](https://poser.pugx.org/paragonie/eloquent-ciphersweet/license)](https://packagist.org/packages/paragonie/eloquent-ciphersweet)
