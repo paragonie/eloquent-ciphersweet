@@ -2,12 +2,11 @@
 declare(strict_types=1);
 namespace ParagonIE\EloquentCipherSweet\Tests;
 
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\DB;
-use ParagonIE\CipherSweet\BlindIndex;
-use ParagonIE\CipherSweet\EncryptedMultiRows;
-use ParagonIE\EloquentCipherSweet\CipherSweet;
-use ParagonIE\EloquentCipherSweet\Tests\TestCase;
+use ParagonIE\EloquentCipherSweet\Tests\TestModels\{
+    Contact,
+    User
+};
 
 class CipherSweetTest extends TestCase
 {
@@ -43,29 +42,19 @@ class CipherSweetTest extends TestCase
         $retrievedUser = User::whereBlind('email', 'test@example.com')->first();
         $this->assertSame('test@example.com', $retrievedUser->email);
     }
-}
 
-class User extends Model
-{
-    use CipherSweet;
-
-    protected $table = 'users';
-
-    protected static function configureCipherSweet(EncryptedMultiRows $multiRows): void
+    /**
+     * @test
+     */
+    public function testWhereBlindWithCustomIndexName()
     {
-        $multiRows
-            ->addTable('users')
-            ->addTextField('users', 'name')
-            ->addBlindIndex(
-                'users',
-                'name',
-                new BlindIndex('name_bi')
-            )
-            ->addTextField('users', 'email')
-            ->addBlindIndex(
-                'users',
-                'email',
-                new BlindIndex('email_bi', [], 16)
-            );
+        $contact = new Contact();
+        $contact->name = 'test';
+        $contact->email = 'test@example.com';
+        $contact->save();
+
+        // Retrieve the contact using the model and custom blind index
+        $retrievedContact = Contact::whereBlind('email', 'test@example.com', 'my_custom_email_index')->first();
+        $this->assertSame('test@example.com', $retrievedContact->email);
     }
 }

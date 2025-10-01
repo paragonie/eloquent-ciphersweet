@@ -46,5 +46,23 @@ abstract class TestCase extends OrchestraTestCase
             $table->string('email_bi');
             $table->timestamps();
         });
+
+        Schema::create('posts', function (Blueprint $table) {
+            $table->increments('id');
+            $table->string('title');
+            $table->string('title_bi');
+            $table->string('body');
+            $table->string('body_bi');
+            $table->timestamps();
+        });
+
+        Schema::create('contacts', function (Blueprint $table) {
+            $table->increments('id');
+            $table->string('name');
+            $table->string('name_bi');
+            $table->string('email');
+            $table->string('my_custom_email_index');
+            $table->timestamps();
+        });
     }
 }
