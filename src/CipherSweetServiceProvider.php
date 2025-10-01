@@ -2,9 +2,10 @@
 declare(strict_types=1);
 namespace ParagonIE\EloquentCipherSweet;
 
+use Exception;
 use Illuminate\Support\ServiceProvider;
 use ParagonIE\CipherSweet\Backend\FIPSCrypto;
-use ParagonIE\CipherSweet\Backend\ModernCrypto;
+use ParagonIE\CipherSweet\Backend\BoringCrypto;
 use ParagonIE\CipherSweet\CipherSweet;
 use ParagonIE\CipherSweet\Contract\BackendInterface;
 use ParagonIE\CipherSweet\Contract\KeyProviderInterface;
@@ -49,19 +50,17 @@ final class CipherSweetServiceProvider extends ServiceProvider
      */
     protected function buildBackend(): BackendInterface
     {
-        switch (config('ciphersweet.backend')) {
-            case 'fips':
-                return new FIPSCrypto;
-            case 'nacl':
-            default:
-                return new ModernCrypto;
-        }
+        return match (config('ciphersweet.backend')) {
+            'fips' => new FIPSCrypto,
+            default => new BoringCrypto,
+        };
     }
 
     /**
      * @param BackendInterface $backend
      * @return KeyProviderInterface
      * @throws CryptoOperationException
+     * @throws Exception
      */
     protected function buildKeyProvider(BackendInterface $backend): KeyProviderInterface
     {
@@ -69,9 +68,17 @@ final class CipherSweetServiceProvider extends ServiceProvider
             case 'custom':
                 return $this->buildCustomKeyProvider();
             case 'file':
-                return new FileProvider(config('ciphersweet.file.path'));
+                $file = config('ciphersweet.providers.file.path');
+                if (!is_readable($file)) {
+                    throw new Exception("File does not exist");
+                }
+                return new FileProvider($file);
             case 'string':
-                return new StringProvider(config('ciphersweet.string.key'));
+                $key = config('ciphersweet.providers.string.key');
+                if (is_null($key)) {
+                    throw new Exception("Config directive is not specified");
+                }
+                return new StringProvider($key);
             case 'random':
             default:
                 return new RandomProvider($backend);

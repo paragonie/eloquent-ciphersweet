@@ -16,7 +16,7 @@ class EncryptedFieldModelTest extends TestCase
 
         config([
             'ciphersweet.provider' => 'string',
-            'ciphersweet.string.key' => '3f3c6556191e3624a9745367614f24a18641973b5269781604a838507c13e565'
+            'ciphersweet.providers.string.key' => '3f3c6556191e3624a9745367614f24a18641973b5269781604a838507c13e565'
         ]);
     }
 
