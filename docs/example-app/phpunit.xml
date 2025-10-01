@@ -30,5 +30,6 @@
         <env name="PULSE_ENABLED" value="false"/>
         <env name="TELESCOPE_ENABLED" value="false"/>
         <env name="NIGHTWATCH_ENABLED" value="false"/>
+        <env name="CIPHERSWEET_KEY" value="c00051417523c9e9584e35ee5bfa6ce62935671546467cf670bc3b130e0b5e25"/>
     </php>
 </phpunit>

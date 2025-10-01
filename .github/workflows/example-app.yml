@@ -1,0 +1,40 @@
+name: Example App
+
+on: [push, pull_request]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.3'
+          extensions: mbstring, xml, gmp, curl, sqlite3, pdo_sqlite
+          tools: composer
+
+      - name: Install Laravel installer
+        run: composer global require laravel/installer
+
+      - name: Install root dependencies
+        working-directory: docs/example-app
+        run: composer install --prefer-dist --no-progress
+
+      - name: Setup Example App
+        working-directory: docs/example-app
+        run: |
+          cp .env.example .env
+          php artisan key:generate
+          php artisan ciphersweet:generate:key
+          touch database/database.sqlite
+
+      - name: Install Example App dependencies
+        working-directory: docs/example-app
+        run: composer install --prefer-dist --no-progress
+
+      - name: Run Example App Tests
+        working-directory: docs/example-app
+        run: php artisan test

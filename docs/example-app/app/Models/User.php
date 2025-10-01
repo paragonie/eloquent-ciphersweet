@@ -4,13 +4,15 @@ namespace App\Models;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use ParagonIE\CipherSweet\BlindIndex;
+use ParagonIE\CipherSweet\EncryptedMultiRows;
+use ParagonIE\EloquentCipherSweet\CipherSweet;
+use Illuminate\Foundation\Auth\User as Authenticatable;
 
 class User extends Authenticatable
 {
-    /** @use HasFactory<\Database\Factories\UserFactory> */
-    use HasFactory, Notifiable;
+    use HasFactory, Notifiable, CipherSweet;
 
     /**
      * The attributes that are mass assignable.
@@ -44,5 +46,21 @@ class User extends Authenticatable
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
         ];
+    }
+
+    /**
+     * @param EncryptedMultiRows $multiRows
+     * @return void
+     * @throws \ParagonIE\CipherSweet\Exception\CipherSweetException
+     * @throws \SodiumException
+     */
+    protected static function configureCipherSweet(EncryptedMultiRows $multiRows): void
+    {
+        $multiRows
+            ->addTable('users')
+            ->addTextField('users', 'name')
+            ->addBlindIndex('users', 'name', new BlindIndex('users_name_bi'))
+            ->addTextField('users', 'email')
+            ->addBlindIndex('users', 'email', new BlindIndex('users_email_bi'));
     }
 }
