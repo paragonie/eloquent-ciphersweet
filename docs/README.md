@@ -12,7 +12,7 @@ We do not support non-Composer use-cases with this adapter library.
 
 ## Configuration
 
-Once you've installed , publish `config/ciphersweet.php` with `php artisan vendor:publish` and then run the following
+Once you've installed, publish `config/ciphersweet.php` with `php artisan vendor:publish` and then run the following
 artisan command to set your key.
 
 ```
@@ -59,54 +59,46 @@ class Blah extends Model
 
 ## Defining Encrypted Fields
 
-Override the `configureCipherSweet()` method to add columns to the bare
-`EncryptedMultiRows` object.
+Override the `configureCipherSweet()` method to define your encrypted fields and blind indexes.
+
+Every field that will be used in database lookups should have a blind index attached to it.
 
 ```php
 <?php
 namespace YourCompany\YourApp;
 
 use ParagonIE\CipherSweet\BlindIndex;
-use ParagonIE\CipherSweet\CompoundIndex;
 use ParagonIE\CipherSweet\EncryptedMultiRows;
-use ParagonIE\CipherSweet\Transformation\LastFourDigits;
 use ParagonIE\EloquentCipherSweet\EncryptedFieldModel;
 
-class Blah extends EncryptedFieldModel
+class Example extends EncryptedFieldModel
 {
     /**
      * @param EncryptedMultiRows $multiRows
-     * @return EncryptedMultiRows
+     * @return void
      */
-    public function configureCipherSweet(
-        EncryptedMultiRows $multiRows
-    ): EncryptedMultiRows {
-        return $multiRows
-            ->addTable('sql_table_name')
-                ->addTextField('sql_table_name', 'column1')
-                ->addBooleanField('sql_table_name', 'column2')
-                ->addFloatField('sql_table_name', 'column3')
-                ->addBlindIndex(
-                    'sql_table_name',
-                    'column1',
-                    new BlindIndex('sql_table_name_column1_index_1', [], 8)
-                )
-                ->addCompoundIndex(
-                    'sql_table_name',
-                     (new CompoundIndex(
-                         'sql_table_name_compound',
-                         ['column1', 'column2'],
-                         4,
-                         true
-                     ))->addTransform('column1', new LastFourDigits())
-                )
-            ->addTable('other_table');
+    protected static function configureCipherSweet(EncryptedMultiRows $multiRows): void
+    {
+        $multiRows
+            ->addTable('users')
+            ->addTextField('users', 'name')
+            ->addBlindIndex(
+                'users',
+                'name',
+                new BlindIndex('users_name_bi')
+            )
+            ->addTextField('users', 'email')
+            ->addBlindIndex(
+                'users',
+                'email',
+                new BlindIndex('users_email_bi', [], 16)
+            );
     }
 }
 ```
 
 If you're not familiar with the `EncryptedMultiRows` API, please refer to the
-relevant section of the [CipherSweet documentation](https://github.com/paragonie/ciphersweet/tree/master/docs#encryptedmultirows).
+relevant section of the [CipherSweet documentation](https://ciphersweet.paragonie.com/php/usage#encryptedmultirows).
 
 ## Creating a Custom Key Provider
 
@@ -117,3 +109,18 @@ implements `\ParagonIE\CipherSweet\Contract\KeyProviderInterface`. `__invoke` wi
 `\ParagonIE\CipherSweet\Contract\BackendInterface` as its sole argument.
 
 ## Storing and Searching on Encrypted Data
+
+Once you have configured your model, the encryption and decryption of data is handled automatically by the model
+observer. When you save a model, the encrypted fields will be encrypted, and when you retrieve a model, they will be
+decrypted.
+
+To search on encrypted data, you can use the `whereBlind` scope. This scope will automatically calculate the blind index
+for the given value and use it in the query.
+
+```php
+// Find a user by their email address:
+$user = Example::whereBlind('email', 'test@example.com')->first();
+
+// You can also specify the blind index name if it doesn't follow the convention:
+$user = Example::whereBlind('email', 'test@example.com', 'my_custom_email_index')->first();
+```

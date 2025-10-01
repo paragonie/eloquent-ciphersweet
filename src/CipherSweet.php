@@ -3,15 +3,9 @@ declare(strict_types=1);
 namespace ParagonIE\EloquentCipherSweet;
 
 use Illuminate\Database\Eloquent\Builder as EloquentBuilder;
-use Illuminate\Database\Query\Builder;
-use Illuminate\Support\Arr;
-use Illuminate\Support\Facades\DB;
-use ParagonIE\CipherSweet\BlindIndex;
 use ParagonIE\CipherSweet\CipherSweet as CipherSweetEngine;
-use ParagonIE\CipherSweet\CompoundIndex;
-use ParagonIE\CipherSweet\Constants;
-use ParagonIE\CipherSweet\Contract\TransformationInterface;
-use ParagonIE\CipherSweet\EncryptedRow;
+use ParagonIE\CipherSweet\EncryptedMultiRows;
+use RuntimeException;
 
 /**
  * Trait CipherSweet
@@ -23,113 +17,35 @@ use ParagonIE\CipherSweet\EncryptedRow;
  */
 trait CipherSweet
 {
-    /** @var EncryptedRow */
-    protected static $cipherSweetEncryptedRow;
+    protected static EncryptedMultiRows $cipherSweetEncryptedMultiRows;
 
-    protected static $cipherSweetIndexes = [];
-
-    protected static $cipherSweetFields = [];
-
-    /** @var array<string,string|array<string>> */
-    private static $indexToField = [];
-
-    /**
-     * @return void
-     */
-    final protected static function bootCipherSweet()
+    final protected static function bootCipherSweet(): void
     {
         static::observe(ModelObserver::class);
 
-        static::$cipherSweetEncryptedRow = new EncryptedRow(
-            app(CipherSweetEngine::class),
-            (new static)->getTable()
+        static::$cipherSweetEncryptedMultiRows = new EncryptedMultiRows(
+            app(CipherSweetEngine::class)
         );
 
-        static::configureCipherSweetFields(static::$cipherSweetEncryptedRow);
-        static::configureCipherSweetIndexes(static::$cipherSweetEncryptedRow);
-        static::configureCipherSweet(static::$cipherSweetEncryptedRow);
+        static::configureCipherSweet(static::$cipherSweetEncryptedMultiRows);
     }
 
     /**
      * @param  object|array|string  $classes
      * @return void
-     * @throws \RuntimeException
+     * @throws RuntimeException
      */
     abstract public static function observe($classes);
 
     /**
-     * Configures which fields are encrypted and as what type. Additionally configures a source of additional
-     * authenticated data.
-     *
-     * @param EncryptedRow $encryptedRow
-     * @return void
-     */
-    final protected static function configureCipherSweetFields(EncryptedRow $encryptedRow)
-    {
-        foreach (static::$cipherSweetFields as $field => $type) {
-            $aadSource = '';
-
-            if (is_array($type)) {
-                list($type, $aadSource) = $type;
-            }
-
-            $encryptedRow->addField($field, $type, $aadSource);
-        }
-    }
-
-    /**
-     * Configures blind indexes.
-     *
-     * @param EncryptedRow $encryptedRow
-     * @return void
-     */
-    final protected static function configureCipherSweetIndexes(EncryptedRow $encryptedRow)
-    {
-        foreach (static::$cipherSweetIndexes as $index => $configuration) {
-            $configuration = Arr::wrap($configuration);
-
-            $column = $configuration[0];
-            $transformations = isset($configuration[1]) ? static::convertTransformations(Arr::wrap($configuration[1])) : [];
-            $isSlow = $configuration[2] ?? false;
-            $filterBits = $configuration[3] ?? 256;
-            $hashConfig = $configuration[4] ?? [];
-
-            if (is_array($column)) {
-                $compoundIndex = new CompoundIndex($index, $column, (int) $filterBits, !$isSlow, $hashConfig);
-
-                foreach ($transformations as $transformation) {
-                    $compoundIndex->addRowTransform($transformation);
-                }
-
-                $encryptedRow->addCompoundIndex($compoundIndex);
-            } else {
-                $encryptedRow->addBlindIndex($column, new BlindIndex($index, $transformations, (int) $filterBits, !$isSlow, $hashConfig));
-            }
-
-            static::$indexToField[$index] = $column;
-        }
-    }
-
-    /**
-     * @param array<string> $transformations
-     * @return array<TransformationInterface>
-     */
-    final protected static function convertTransformations(array $transformations): array
-    {
-        return array_map(function ($transformation) {
-            return app($transformation);
-        }, $transformations);
-    }
-
-    /**
      * Override for additional configuration of the table's encrypted fields and indexes.
      *
-     * @param EncryptedRow $encryptedRow
+     * @param EncryptedMultiRows $multiRows
      * @return void
      */
-    protected static function configureCipherSweet(EncryptedRow $encryptedRow)
+    protected static function configureCipherSweet(EncryptedMultiRows $multiRows)
     {
-        //
+        // To be implemented by the user
     }
 
     /**
@@ -140,7 +56,16 @@ trait CipherSweet
      */
     final public function encryptRow()
     {
-        $this->setRawAttributes(static::$cipherSweetEncryptedRow->encryptRow($this->getAttributes()));
+        $tableName = $this->getTable();
+        $encryptedRow = static::$cipherSweetEncryptedMultiRows
+            ->getEncryptedRowObjectForTable($tableName);
+
+        $attributes = $this->getAttributes();
+
+        $encrypted = $encryptedRow->encryptRow($attributes);
+        $indexes = $encryptedRow->getAllBlindIndexes($attributes);
+
+        $this->setRawAttributes(array_merge($encrypted, $indexes));
     }
 
     /**
@@ -162,40 +87,39 @@ trait CipherSweet
      */
     final public function decryptRow()
     {
-        $this->setRawAttributes(static::$cipherSweetEncryptedRow->decryptRow($this->getAttributes()), true);
+        $tableName = $this->getTable();
+        $this->setRawAttributes(
+            static::$cipherSweetEncryptedMultiRows
+                ->getEncryptedRowObjectForTable($tableName)
+                ->decryptRow($this->getAttributes()),
+            true
+        );
     }
 
     /**
      * @param EloquentBuilder $query
+     * @param string $column
+     * @param string $value
      * @param string $indexName
-     * @param string|array<string,mixed> $value
      * @return EloquentBuilder
+     * @throws \ParagonIE\CipherSweet\Exception\BlindIndexNotFoundException
+     * @throws \ParagonIE\CipherSweet\Exception\CryptoOperationException
+     * @throws \SodiumException
      */
-    final public function scopeWhereBlind(EloquentBuilder $query, string $indexName, $value)
+    final public function scopeWhereBlind(EloquentBuilder $query, string $column, string $value, string $indexName = ''): EloquentBuilder
     {
-        return $query->whereExists(function (Builder $query) use ($indexName, $value): Builder {
-            /** @var CipherSweetEngine $engine */
-            $engine = app(CipherSweetEngine::class);
-            $table = $this->getTable();
+        $tableName = $this->getTable();
+        if (empty($indexName)) {
+            $indexName = $column . '_bi';
+        }
 
-            $column = static::$indexToField[$indexName];
-            $columns = is_string($column) ? [$column => $value] : $value;
+        $biValue = static::$cipherSweetEncryptedMultiRows->getBlindIndex(
+            $tableName,
+            $indexName,
+            [$column => $value]
+        );
 
-            return $query->select(DB::raw(1))
-                ->from('blind_indexes')
-                ->whereRaw(
-                    'blind_indexes.foreign_id = ?.?',
-                    [$table, $this->getKeyName()]
-                )
-                ->where(
-                    'blind_indexes.type',
-                    $engine->getIndexTypeColumn($table, is_string($column) ? $column : Constants::COMPOUND_SPECIAL, $indexName)
-                )
-                ->where(
-                    'blind_indexes.value',
-                    static::$cipherSweetEncryptedRow->getBlindIndex($indexName, $columns)
-                );
-        });
+        return $query->where($indexName, $biValue);
     }
 
     /**
@@ -207,23 +131,4 @@ trait CipherSweet
      * @return string
      */
     abstract public function getKeyName();
-
-    /**
-     * @return array
-     * @throws \SodiumException
-     */
-    final public static function getBlindIndexTypes(): array
-    {
-        /** @var CipherSweetEngine $engine */
-        $engine = app(CipherSweetEngine::class);
-        $table = (new static)->getTable();
-
-        $types = [];
-
-        foreach (static::$indexToField as $indexName => $field) {
-            $types[] = $engine->getIndexTypeColumn($table, is_string($field) ? $field : Constants::COMPOUND_SPECIAL, $indexName);
-        }
-
-        return $types;
-    }
 }

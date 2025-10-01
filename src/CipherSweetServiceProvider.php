@@ -1,5 +1,5 @@
 <?php
-
+declare(strict_types=1);
 namespace ParagonIE\EloquentCipherSweet;
 
 use Illuminate\Support\ServiceProvider;
@@ -26,8 +26,6 @@ final class CipherSweetServiceProvider extends ServiceProvider
                 GenerateKey::class,
             ]);
         }
-
-        $this->loadMigrationsFrom(__DIR__ . '/database/migrations');
 
         $this->publishes([
             __DIR__ . '/config/ciphersweet.php' => config_path('ciphersweet.php'),

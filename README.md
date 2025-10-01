@@ -1,6 +1,13 @@
 # Eloquent-CipherSweet Adapter
 
-> **Attention:** This adapter is still being developed. It's only being open sourced so
+[![Build Status](https://github.com/paragonie/eloquent-ciphersweet/actions/workflows/ci.yml/badge.svg)](https://github.com/paragonie/eloquent-ciphersweet/actions)
+[![Latest Stable Version](https://poser.pugx.org/paragonie/eloquent-ciphersweet/v/stable)](https://packagist.org/packages/paragonie/eloquent-ciphersweet)
+[![Latest Unstable Version](https://poser.pugx.org/paragonie/eloquent-ciphersweet/v/unstable)](https://packagist.org/packages/paragonie/eloquent-ciphersweet)
+[![License](https://poser.pugx.org/paragonie/eloquent-ciphersweet/license)](https://packagist.org/packages/paragonie/eloquent-ciphersweet)
+[![Downloads](https://img.shields.io/packagist/dt/paragonie/eloquent-ciphersweet.svg)](https://packagist.org/packages/paragonie/eloquent-ciphersweet)
+
+> [!IMPORTANT]
+> This adapter is still being developed. It's only being open sourced so
 > it may be tested in a Laravel application. Please don't use it yet.
 
 ---
