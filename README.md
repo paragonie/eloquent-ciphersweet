@@ -7,10 +7,6 @@
 [![License](https://poser.pugx.org/paragonie/eloquent-ciphersweet/license)](https://packagist.org/packages/paragonie/eloquent-ciphersweet)
 [![Downloads](https://img.shields.io/packagist/dt/paragonie/eloquent-ciphersweet.svg)](https://packagist.org/packages/paragonie/eloquent-ciphersweet)
 
-> [!IMPORTANT]
-> This adapter is still being developed. It's only being open sourced so
-> it may be tested in a Laravel application. Please don't use it yet.
-
 ---
 
 This library allows for [searchable encryption](https://paragonie.com/blog/2017/05/building-searchable-encrypted-databases-with-php-and-sql)
